@@ -56,6 +56,12 @@ class Bottleneck(nn.Module):
 
 
 class AttentionPool2d(nn.Module):
+    '''
+    ·实现了自定义的二维注意力池化层，用于对输入的二维特征图进行注意力池化。
+    ·使用多头注意力机制，对输入进行加权池化。
+    ·使用可学习的参数来进行注意力投影。
+    '''
+
     def __init__(self, spacial_dim: int, embed_dim: int, num_heads: int, output_dim: int = None):
         super().__init__()
         self.positional_embedding = nn.Parameter(torch.randn(spacial_dim ** 2 + 1, embed_dim) / embed_dim ** 0.5)
@@ -93,6 +99,11 @@ class AttentionPool2d(nn.Module):
 
 class ModifiedResNet(nn.Module):
     """
+    ·基于 ResNet 的修改版本，进行了一些定制化的改动。
+    ·包含一个 3 层的卷积池化作为前置处理（stem）。
+    ·使用 Bottleneck 类来构建残差块。
+    ·最终的池化层替换为 AttentionPool2d。
+
     A ResNet class that is similar to torchvision's but contains the following changes:
     - There are now 3 "stem" convolutions as opposed to 1, with an average pool instead of a max pool.
     - Performs anti-aliasing strided convolutions, where an avgpool is prepended to convolutions with stride > 1
@@ -359,7 +370,7 @@ class CLIP(nn.Module):
         image_features = self.encode_image(image)
         text_features = self.encode_text(text)
 
-        # normalized features
+        # normalized features 减小偏移
         image_features = image_features / image_features.norm(dim=1, keepdim=True)
         text_features = text_features / text_features.norm(dim=1, keepdim=True)
 
